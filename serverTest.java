@@ -98,7 +98,14 @@ class Handler extends JFrame implements Runnable {
         userText.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        sendMessage(userText.getText());
+                        //sendMessage(userText.getText());
+                    	try {
+                    		showMessage("\nSERVER -" + userText.getText());
+							encryption(userText.getText());
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
                         userText.setText("");
                     }
                 }
@@ -315,7 +322,7 @@ class Handler extends JFrame implements Runnable {
         }
     }
 
-    private void sendMessage(String message){
+   /* private void sendMessage(String message){
 
         try{
         	output.writeUTF("SERVER -" + message);
@@ -325,7 +332,7 @@ class Handler extends JFrame implements Runnable {
             chatWindow.append("\n ERROR: cant't send this message");
         }
 
-    }
+    }*/
 
     private void showMessage(final String text){
         SwingUtilities.invokeLater(
@@ -352,7 +359,7 @@ class Handler extends JFrame implements Runnable {
     private void whileChatting()throws Exception{
         // during the chat conversation
         String message = "You are now connected! ";
-        sendMessage(message);
+       // sendMessage(message);
         ableToType(true);
         do{
             System.out.println(connection.getRemoteSocketAddress().toString());
@@ -372,28 +379,8 @@ class Handler extends JFrame implements Runnable {
 			//showMessage("Don't know what's happening!!!");
         }while(!message.equals("CLIENT_END"));
     }
-	private void decryption(byte[] cipherText)throws Exception {
-		// TODO Auto-generated method stub
-		//KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-		//keyGen.initialize(2048);
-		//KeyPair serverKey = keyGen.generateKeyPair();
-		// send server's public key to client
-		//ObjectOutputStream output = new ObjectOutputStream(connection.getOutputStream());
-		//output.write(serverKey.getPublic());
-		//output.flush();
-		// get client's public key
-		//ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
-		//PublicKey clientPublicKey = (PublicKey) ois.readObject();
-		//System.out.println(clientPublicKey);
-
-		//DataInputStream dis = new DataInputStream(connection.getInputStream());
-		//int length = input.readInt();
-		
-		/*byte[] cipherText = null;
-		if(length>0) {
-			cipherText = new byte[length];
-		    input.readFully(cipherText, 0, cipherText.length); // read the message
-		}*/
+    
+	public void decryption(byte[] cipherText)throws Exception {
 		
 		System.out.println("start of decryption");
 		System.out.println("mesage before decrytion method in bytes" +cipherText);
@@ -438,6 +425,46 @@ class Handler extends JFrame implements Runnable {
 		output.flush();
 		
 	}
+	
+public void encryption(String plainText) throws Exception {
+		
+        Signature signatureProvider = null;
+        signatureProvider = Signature.getInstance("SHA256WithRSA");
+        signatureProvider.initSign(serverKey.getPrivate());
+        signatureProvider.update(plainText.getBytes());
+        byte[] signature = signatureProvider.sign();	
+        
+        String y = signature.toString();
+        
+        Cipher encCipher = null;
+        encCipher = Cipher.getInstance("RSA");
+        encCipher.init(Cipher.ENCRYPT_MODE, clientPublicKey);
+        
+        byte[] encrypted = encCipher.doFinal((plainText+y).getBytes());
+        
+       output.writeInt(encrypted.length);
+		output.write(encrypted);
+		output.flush();
+       	  
+		System.out.println("signature"+signature);
+		System.out.println("length" +signature.length);
+		output.writeInt(signature.length);
+		output.write(signature);
+		output.flush();
+		
+		System.out.println("here");
+		//DataInputStream dis = new DataInputStream(connection.getInputStream());
+//		String result = input.readUTF();
+//		System.out.println("The result returned by server is : " + result);
+//		String result2 = input.readUTF();
+//		System.out.println("The integrity of message is checked with " + result2);
+
+		//input.close();
+		//showMessage("\nCLIENT - "+plainText);
+		//connection.close();
+        
+        
+    }
 	
 	public static byte[] decrypt(byte[] encrypted, PrivateKey privateKey) throws Exception {
 		System.out.println("start of decryption method");

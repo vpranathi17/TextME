@@ -21,6 +21,7 @@ import java.security.DigestException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 
@@ -318,28 +319,8 @@ public class Client extends JFrame{
         System.out.println("In show up streams");
     }
 
-    private void encryption(String plainText) throws Exception {
-		// TODO Auto-generated method stub
-    	//ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
-		//PublicKey serverPublicKey = (PublicKey) ois.readObject();
+    public void encryption(String plainText) throws Exception {
 		
-		//DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-    	
-        //String plainText = "Hiiiiiiii";
-
-        // KeyPair
-        //KeyPairGenerator keyPairGenerator = null;
-        //keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        //keyPairGenerator.initialize(2048);
-        //KeyPair keyPair = keyPairGenerator.generateKeyPair();		        
-        
-        //ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
-        
-        //System.out.println(keyPair.getPublic());
-		//oos.writeObject(keyPair.getPublic());
-		//oos.flush();
-
-		// Signature
         Signature signatureProvider = null;
         signatureProvider = Signature.getInstance("SHA256WithRSA");
         signatureProvider.initSign(clientKey.getPrivate());
@@ -379,20 +360,74 @@ public class Client extends JFrame{
     }
 	
 
-	public void whileChatting()throws IOException, ClassNotFoundException{
+	public void whileChatting()throws Exception{
         // during the chat conversation
 		setVisible(true);
     	showMessage("\n whileChatting setup");
                         do{
                         	try {
-                        		message = input.readUTF();
+                        		int length = input.readInt();
+                        		
+                        		byte[] cipherText = null;
+                        		if(length>0) {
+                        			cipherText = new byte[length];
+                        		    input.readFully(cipherText, 0, cipherText.length); // read the message
+                        		}
+                        		//message = input.readUTF();
+                        		decryption(cipherText);
                         		System.out.println(message);
-                                showMessage("\n" + message);
+                                //showMessage("\n" + message);
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
                         }while(!message.equals("SERVER_END"));      
     }
+	
+	public void decryption(byte[] cipherText)throws Exception {
+		
+		System.out.println("start of decryption");
+		System.out.println("mesage before decrytion method in bytes" +cipherText);
+		byte[] decipheredMessage = decrypt(cipherText, clientKey.getPrivate());
+		
+		System.out.println(String.format("The plaintext decripted on server side is : %s", decipheredMessage));
+		String x = new String(decipheredMessage);
+		String result =  x.substring(0,x.indexOf('['));
+		String sign =  x.substring(x.indexOf('['));
+		
+		//String res = new String(result);
+		
+		System.out.println("result"+result);
+		System.out.println("sign"+sign);	
+		
+		//System.out.println(sign.length);
+		int length1 = input.readInt();
+		byte[] signature = null;
+		if(length1>0) {
+			signature = new byte[length1];
+		    input.readFully(signature, 0, signature.length); // read the message
+		}
+		
+		
+		Signature publicSignature = Signature.getInstance("SHA256withRSA");				
+        publicSignature.initVerify(serverPublicKey);
+        publicSignature.update(result.getBytes());      
+       
+        
+        boolean check = publicSignature.verify(signature);
+        System.out.println("check"+check);				
+		
+		//DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+		System.out.println("here");
+//		output.writeUTF(result);
+//		if(check) {
+//			output.writeUTF("yes");
+//		}else{
+//			output.writeUTF("no");
+//		}
+		showMessage("\n"+"SERVER-"+result);
+		output.flush();
+		
+	}
 
     private static void closeConn(){
         showMessage("\n Bye Bye Server's out!! ");
@@ -436,5 +471,14 @@ public class Client extends JFrame{
 
                 }
         );
+    }
+    
+    public static byte[] decrypt(byte[] encrypted, PrivateKey privateKey) throws Exception {
+		System.out.println("start of decryption method");
+        Cipher decriptCipher = Cipher.getInstance("RSA");
+        decriptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] x = decriptCipher.doFinal(encrypted);
+        System.out.println("end of decryption method");
+        return x;
     }
 }
