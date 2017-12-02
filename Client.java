@@ -22,6 +22,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.PublicKey;
+import java.security.Signature;
 
 public class Client extends JFrame{
 	/**
@@ -35,7 +36,7 @@ public class Client extends JFrame{
     private static String serverIP;
     private static Socket connection;
     static PublicKey serverPublicKey;
-    
+    static KeyPair clientKey;
     static String message ="";	
     String username = "";
 	String password = "";
@@ -55,14 +56,19 @@ public class Client extends JFrame{
         userText.setEditable(false);
         userText.addActionListener(
                 new ActionListener(){
-                    @Override
                     public void actionPerformed(ActionEvent e) {
-                        try {
-							sendData(e.getActionCommand());
+                        try {                        		
+                        	String message = e.getActionCommand();
+                        	showMessage("\nCLIENT - "+message);
+                        	encryption(message);
+							//sendData(e.getActionCommand());
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						} catch (ClassNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
@@ -83,7 +89,7 @@ public class Client extends JFrame{
     }
     
     public void chatWin() throws Exception {
-    	ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/unnamed.png");
+    	ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/unnamed.png");
         String[] options = new String[] {"SignUp", "SignIn", "Cancel"};
     	int reply = JOptionPane.showOptionDialog(null, "Welcome to TextME application", "TextME", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
     			 img, options, options[0]);
@@ -101,7 +107,7 @@ public class Client extends JFrame{
 	}
     
     private void signin_frame() throws Exception {
-    	ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/unnamed.png");
+    	ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/unnamed.png");
         JTextField Username = new JTextField(5);
         JPasswordField Password = new JPasswordField(5);
 
@@ -124,7 +130,7 @@ public class Client extends JFrame{
 	}
     
     private void signup_frame() throws Exception {
-    	ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/unnamed.png");
+    	ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/unnamed.png");
         JTextField Username = new JTextField(5);
         JPasswordField Password = new JPasswordField(5);
         JTextField Emailid = new JTextField(20);
@@ -200,8 +206,8 @@ public class Client extends JFrame{
         dos4.write(cipherText3);
         
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-		keyGen.initialize(512);
-		KeyPair clientKey = keyGen.generateKeyPair();
+		keyGen.initialize(1024);
+		clientKey = keyGen.generateKeyPair();
 		
         ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
         oos.writeObject(clientKey.getPublic());
@@ -225,29 +231,29 @@ public class Client extends JFrame{
 	   String rmsg = dis.readUTF();
 	   //System.out.println(rmsg);
 	   if (rmsg.equals("OK")){
-		   ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/sign-check-icon.png");
+		   ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/sign-check-icon.png");
 			JOptionPane.showMessageDialog(null," Everything is fine!","TextME",JOptionPane.INFORMATION_MESSAGE,img);
 			connections();
 	   }
 	   else{
 		   if (rmsg.equals("Exists")){
-			   ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/images.jpeg");
+			   ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/images.jpeg");
 				JOptionPane.showMessageDialog(null," User already exists!","TextME",JOptionPane.INFORMATION_MESSAGE,img);
 				chatWin();
 		   }
 		   else {
 			   if (rmsg.equals("Not Cool")){
-				   ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/red_cross_x_clip_art_7568.jpg");
+				   ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/red_cross_x_clip_art_7568.jpg");
 					JOptionPane.showMessageDialog(null,"Please enter valid credentials!","TextME",JOptionPane.ERROR_MESSAGE,img);
 					chatWin();
 			   }
 			   else{
 				   if(rmsg.equals("Inserted")){
-					   ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/svfzpeepadzijwotnacu.gif");
+					   ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/svfzpeepadzijwotnacu.gif");
 						JOptionPane.showMessageDialog(null," New user created!","TextME",JOptionPane.INFORMATION_MESSAGE,img); 
 						chatWin();
 				   }else{
-					   ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/red_cross_x_clip_art_7568.jpg");
+					   ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/red_cross_x_clip_art_7568.jpg");
 						JOptionPane.showMessageDialog(null," Something went wrong!","TextME",JOptionPane.ERROR_MESSAGE,img);
 						chatWin();
 				   }
@@ -261,7 +267,7 @@ public class Client extends JFrame{
        JPanel myPanel = new JPanel();
        myPanel.add(new JLabel("Username:"));
        myPanel.add(user);
-	   ImageIcon icon = new ImageIcon("/Users/PranathiVasireddy/Desktop/unnamed.png");
+	   ImageIcon icon = new ImageIcon("/Users/Darshana/Desktop/unnamed.png");
 		int result = JOptionPane.showConfirmDialog(null, myPanel, 
                "Please enter the username you want to connect to:", JOptionPane.DEFAULT_OPTION, JOptionPane.OK_CANCEL_OPTION,icon);;
 	       //System.out.println(result);
@@ -283,7 +289,7 @@ public class Client extends JFrame{
         DataInputStream dis = new DataInputStream(connection.getInputStream());
         String rmsg = dis.readUTF();
         if (rmsg.equals("Connected")){
- 		   ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/sign-check-icon.png");
+ 		   ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/sign-check-icon.png");
 			JOptionPane.showMessageDialog(null," Connected!","TextME",JOptionPane.INFORMATION_MESSAGE,img);
 	        ableToType(true);
 	        setupStreams();
@@ -291,12 +297,12 @@ public class Client extends JFrame{
         }
         else{
         	if(rmsg.equals("Not Connected")){
-				   	ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/svfzpeepadzijwotnacu.gif");
+				   	ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/svfzpeepadzijwotnacu.gif");
 					JOptionPane.showMessageDialog(null," User requested is not active now!","TextME",JOptionPane.INFORMATION_MESSAGE,img); 
 					connections();
         	}
         	else{
- 			   ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/red_cross_x_clip_art_7568.jpg");
+ 			   ImageIcon img = new ImageIcon("/Users/Darshana/Desktop/red_cross_x_clip_art_7568.jpg");
  			   JOptionPane.showMessageDialog(null," Enter valid username for connection!","TextME",JOptionPane.ERROR_MESSAGE,img);
  			   connections();
         	}
@@ -312,7 +318,68 @@ public class Client extends JFrame{
         System.out.println("In show up streams");
     }
 
-    public void whileChatting()throws IOException, ClassNotFoundException{
+    private void encryption(String plainText) throws Exception {
+		// TODO Auto-generated method stub
+    	//ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
+		//PublicKey serverPublicKey = (PublicKey) ois.readObject();
+		
+		//DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+    	
+        //String plainText = "Hiiiiiiii";
+
+        // KeyPair
+        //KeyPairGenerator keyPairGenerator = null;
+        //keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        //keyPairGenerator.initialize(2048);
+        //KeyPair keyPair = keyPairGenerator.generateKeyPair();		        
+        
+        //ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
+        
+        //System.out.println(keyPair.getPublic());
+		//oos.writeObject(keyPair.getPublic());
+		//oos.flush();
+
+		// Signature
+        Signature signatureProvider = null;
+        signatureProvider = Signature.getInstance("SHA256WithRSA");
+        signatureProvider.initSign(clientKey.getPrivate());
+        signatureProvider.update(plainText.getBytes());
+        byte[] signature = signatureProvider.sign();	
+        
+        String y = signature.toString();
+        
+        Cipher encCipher = null;
+        encCipher = Cipher.getInstance("RSA");
+        encCipher.init(Cipher.ENCRYPT_MODE, serverPublicKey);
+        
+        byte[] encrypted = encCipher.doFinal((plainText+y).getBytes());
+        
+       output.writeInt(encrypted.length);
+		output.write(encrypted);
+		output.flush();
+       	  
+		System.out.println("signature"+signature);
+		System.out.println("length" +signature.length);
+		output.writeInt(signature.length);
+		output.write(signature);
+		output.flush();
+		
+		System.out.println("here");
+		//DataInputStream dis = new DataInputStream(connection.getInputStream());
+//		String result = input.readUTF();
+//		System.out.println("The result returned by server is : " + result);
+//		String result2 = input.readUTF();
+//		System.out.println("The integrity of message is checked with " + result2);
+
+		//input.close();
+		//showMessage("\nCLIENT - "+plainText);
+		//connection.close();
+        
+        
+    }
+	
+
+	public void whileChatting()throws IOException, ClassNotFoundException{
         // during the chat conversation
 		setVisible(true);
     	showMessage("\n whileChatting setup");
@@ -339,7 +406,7 @@ public class Client extends JFrame{
             io.printStackTrace();
         }
     }
-    static void sendData(String message) throws IOException, ClassNotFoundException{
+   /* static void sendData(String message) throws IOException, ClassNotFoundException{
         try{
             output.writeUTF("CLIENT - " + message);
             output.flush();
@@ -347,7 +414,7 @@ public class Client extends JFrame{
         }catch(IOException io){
         	io.printStackTrace();
         }
-    }
+    }*/
 
     static void showMessage(final String text) {
         SwingUtilities.invokeLater(

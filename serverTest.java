@@ -19,7 +19,9 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -72,6 +74,7 @@ class Handler extends JFrame implements Runnable {
 	static java.sql.Connection conn = null;
 	static Statement stmt;
 	KeyPair serverKey;
+	PublicKey clientPublicKey;
 	//ArrayList<String> activeusers = new ArrayList<String>();
 	//ArrayList<Socket> users = new ArrayList<Socket>();
 	
@@ -94,7 +97,6 @@ class Handler extends JFrame implements Runnable {
         userText.setEditable(false);
         userText.addActionListener(
                 new ActionListener() {
-                    @Override
                     public void actionPerformed(ActionEvent e) {
                         sendMessage(userText.getText());
                         userText.setText("");
@@ -113,12 +115,12 @@ class Handler extends JFrame implements Runnable {
     
   private void infoExchange()throws Exception{
       	KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-		keyGen.initialize(512);
+		keyGen.initialize(1024);
 		serverKey = keyGen.generateKeyPair();
 		
-		ObjectOutputStream oos = new ObjectOutputStream(connection.getOutputStream());
-		oos.writeObject(serverKey.getPublic());
-		oos.flush();
+		ObjectOutputStream output = new ObjectOutputStream(connection.getOutputStream());
+		output.writeObject(serverKey.getPublic());
+		output.flush();
 
     	dis1 = new DataInputStream(connection.getInputStream());
 		int length = dis1.readInt();
@@ -179,7 +181,7 @@ class Handler extends JFrame implements Runnable {
 		String info = new String(cipher3.doFinal(cipherText3));
     	
     	ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
-    	PublicKey clientPublicKey = (PublicKey) ois.readObject();
+    	clientPublicKey = (PublicKey) ois.readObject();
 
 		//System.out.println(cipherText);
 //		System.out.println(cipherText1);
@@ -200,7 +202,7 @@ class Handler extends JFrame implements Runnable {
   	private void databaseCheck(String username, String password, PublicKey clientPublicKey, String info, InetAddress inet, int portNum, String email) throws Exception{
   		String msg = "";
 		DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-  		String url = ("jdbc:sqlite:/Users/PranathiVasireddy/Desktop/sqlite/test.db");	
+  		String url = ("jdbc:sqlite:/Users/Darshana/Desktop/test.db");	
 		conn = DriverManager.getConnection(url);
 		stmt = conn.createStatement();
 		String sql = ("SELECT USERNAME FROM LOGIN WHERE USERNAME ='"+username+"'");
@@ -254,7 +256,7 @@ class Handler extends JFrame implements Runnable {
 		}
   	}
 
-    private void connectionCheck() throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, SQLException {
+    private void connectionCheck() throws Exception {
     	DataInputStream dis = new DataInputStream(connection.getInputStream());
 		int length = dis.readInt();
 		
@@ -288,7 +290,7 @@ class Handler extends JFrame implements Runnable {
 //			}
 		}
 	}
-	private void setupStreams()throws IOException{
+	private void setupStreams()throws Exception{
 		setVisible(true);
         output = new DataOutputStream(connection.getOutputStream());
         output.flush();
@@ -347,16 +349,102 @@ class Handler extends JFrame implements Runnable {
         );
     }
 
-    private void whileChatting()throws IOException{
+    private void whileChatting()throws Exception{
         // during the chat conversation
         String message = "You are now connected! ";
         sendMessage(message);
         ableToType(true);
         do{
-            System.out.print(connection.getRemoteSocketAddress().toString());
-         message = (String) input.readUTF();
-			showMessage("\n" + message);
+            System.out.println(connection.getRemoteSocketAddress().toString());
+            
+          //DataInputStream dis = new DataInputStream(connection.getInputStream());
+    		int length = input.readInt();
+    		
+    		byte[] cipherText = null;
+    		if(length>0) {
+    			cipherText = new byte[length];
+    		    input.readFully(cipherText, 0, cipherText.length); // read the message
+    		}
+         //message = (String) input.readUTF();
+         System.out.println(cipherText);
+         decryption(cipherText);
+			//showMessage("\n" + message);
 			//showMessage("Don't know what's happening!!!");
         }while(!message.equals("CLIENT_END"));
+    }
+	private void decryption(byte[] cipherText)throws Exception {
+		// TODO Auto-generated method stub
+		//KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+		//keyGen.initialize(2048);
+		//KeyPair serverKey = keyGen.generateKeyPair();
+		// send server's public key to client
+		//ObjectOutputStream output = new ObjectOutputStream(connection.getOutputStream());
+		//output.write(serverKey.getPublic());
+		//output.flush();
+		// get client's public key
+		//ObjectInputStream ois = new ObjectInputStream(connection.getInputStream());
+		//PublicKey clientPublicKey = (PublicKey) ois.readObject();
+		//System.out.println(clientPublicKey);
+
+		//DataInputStream dis = new DataInputStream(connection.getInputStream());
+		//int length = input.readInt();
+		
+		/*byte[] cipherText = null;
+		if(length>0) {
+			cipherText = new byte[length];
+		    input.readFully(cipherText, 0, cipherText.length); // read the message
+		}*/
+		
+		System.out.println("start of decryption");
+		System.out.println("mesage before decrytion method in bytes" +cipherText);
+		byte[] decipheredMessage = decrypt(cipherText, serverKey.getPrivate());
+		
+		System.out.println(String.format("The plaintext decripted on server side is : %s", decipheredMessage));
+		String x = new String(decipheredMessage);
+		String result =  x.substring(0,x.indexOf('['));
+		String sign =  x.substring(x.indexOf('['));
+		
+		//String res = new String(result);
+		
+		System.out.println("result"+result);
+		System.out.println("sign"+sign);	
+		
+		//System.out.println(sign.length);
+		int length1 = input.readInt();
+		byte[] signature = null;
+		if(length1>0) {
+			signature = new byte[length1];
+		    input.readFully(signature, 0, signature.length); // read the message
+		}
+		
+		
+		Signature publicSignature = Signature.getInstance("SHA256withRSA");				
+        publicSignature.initVerify(clientPublicKey);
+        publicSignature.update(result.getBytes());      
+       
+        
+        boolean check = publicSignature.verify(signature);
+        System.out.println("check"+check);				
+		
+		//DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+		System.out.println("here");
+//		output.writeUTF(result);
+//		if(check) {
+//			output.writeUTF("yes");
+//		}else{
+//			output.writeUTF("no");
+//		}
+		showMessage("\n"+"CLIENT-"+result);
+		output.flush();
+		
+	}
+	
+	public static byte[] decrypt(byte[] encrypted, PrivateKey privateKey) throws Exception {
+		System.out.println("start of decryption method");
+        Cipher decriptCipher = Cipher.getInstance("RSA");
+        decriptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] x = decriptCipher.doFinal(encrypted);
+        System.out.println("end of decryption method");
+        return x;
     }
 }
