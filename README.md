@@ -6,3 +6,5 @@
 # Anti Replay Attaack
 # Database lock needs to be handled
 # Token encryption needs to be done
+# Token matching on client 2
+# client-server encryption
