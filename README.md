@@ -4,7 +4,7 @@
 # Encryption and Decryption on both sides is done
 # Anti Brute Force Attack
 # Anti Replay Attaack
-# Database lock needs to be handled
+# Database lock needs to be handled (fixed)
 # Token encryption needs to be done
 # Token matching on client 2
 # client-server encryption
