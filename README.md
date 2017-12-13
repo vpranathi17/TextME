@@ -8,3 +8,4 @@
 # Token encryption needs to be done
 # Token matching on client 2
 # client-server encryption
+# take care of extra \n and no \n on the clinet-2 side !!
