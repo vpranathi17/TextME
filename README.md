@@ -6,6 +6,6 @@
 # Anti Replay Attaack
 # Database lock needs to be handled (fixed)
 # Token encryption needs to be done
-# Token matching on client 2
+# Token matching on client 2 (fixed)
 # client-server encryption
 # take care of extra \n and no \n on the clinet-2 side !!
