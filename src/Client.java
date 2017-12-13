@@ -99,11 +99,11 @@ public class Client extends JFrame{
         int reply = JOptionPane.showOptionDialog(null, "Welcome to TextME application", "TextME", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
                 img, options, options[0]);
         if (reply == 1){
-            signin_frame();
+            signinFrame();
         }
         else{
             if(reply == 0){
-                signup_frame();
+                signupFrame();
             }
             else{
                 JOptionPane.showMessageDialog(null, "See you later!! Bye!!", "TextME",JOptionPane.INFORMATION_MESSAGE,img);
@@ -111,7 +111,7 @@ public class Client extends JFrame{
         }
     }
 
-    private void signin_frame() throws Exception {
+    private void signinFrame() throws Exception {
         ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/unnamed.png");
         JTextField Username = new JTextField(5);
         JPasswordField Password = new JPasswordField(5);
@@ -138,7 +138,7 @@ public class Client extends JFrame{
         }
     }
 
-    private void signup_frame() throws Exception {
+    private void signupFrame() throws Exception {
         ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/unnamed.png");
         JTextField Username = new JTextField(5);
         JPasswordField Password = new JPasswordField(5);
@@ -161,13 +161,13 @@ public class Client extends JFrame{
             if (email.matches("\\[")){
                 ImageIcon img1 = new ImageIcon("/Users/PranathiVasireddy/Desktop/red_cross_x_clip_art_7568.jpg");
                 JOptionPane.showMessageDialog(null,"Please enter valid credentials!","TextME",JOptionPane.ERROR_MESSAGE,img1);
-                signup_frame();
+                signupFrame();
             }
             username = Username.getText();
             if (username.matches("\\[")){
                 ImageIcon img1 = new ImageIcon("/Users/PranathiVasireddy/Desktop/red_cross_x_clip_art_7568.jpg");
                 JOptionPane.showMessageDialog(null,"Please enter valid credentials!","TextME",JOptionPane.ERROR_MESSAGE,img1);
-                signup_frame();
+                signupFrame();
             }
             password = String.valueOf(Password.getPassword());
             if (password.matches(".*([A-Z]*.*[0-9]*.*[_.#@$%^&*!]*.)") && password.length()>=8){
@@ -177,7 +177,7 @@ public class Client extends JFrame{
             else{
                 ImageIcon img1 = new ImageIcon("/Users/PranathiVasireddy/Desktop/red_cross_x_clip_art_7568.jpg");
                 JOptionPane.showMessageDialog(null," Please choose a strong password!","TextME",JOptionPane.ERROR_MESSAGE,img1);
-                signup_frame();
+                signupFrame();
             }
         }
         else{
@@ -281,7 +281,7 @@ public class Client extends JFrame{
                     if(rmsg.equals("Inserted")){
                         ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/svfzpeepadzijwotnacu.gif");
                         JOptionPane.showMessageDialog(null," New user created!","TextME",JOptionPane.INFORMATION_MESSAGE,img);
-                        signin_frame();
+                        signinFrame();
                     }else{
                         ImageIcon img = new ImageIcon("/Users/PranathiVasireddy/Desktop/red_cross_x_clip_art_7568.jpg");
                         JOptionPane.showMessageDialog(null," Something went wrong!","TextME",JOptionPane.ERROR_MESSAGE,img);
