@@ -9,3 +9,4 @@
 # Token matching on client 2 (fixed)
 # client-server encryption
 # take care of extra \n and no \n on the clinet-2 side !!(fixed)
+# SQL Injection attack and its prevention
