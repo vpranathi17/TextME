@@ -85,7 +85,6 @@ public class Client extends JFrame{
         );
         add(end, BorderLayout.SOUTH);
         setSize(300,150);
-        ableToType(true);
         setVisible(false);
     }
 
@@ -486,7 +485,8 @@ public class Client extends JFrame{
 
     public void whileChatting(String user)throws Exception{
         // during the chat conversation
-        setVisible(true);
+        setVisible(true);        
+        ableToType(true);
         //System.out.println(user);
         showMessage("Chat setup for.... "+ username);
         do{
@@ -599,7 +599,7 @@ public class Client extends JFrame{
     }
 
     static void ableToType(final boolean tof){
-        System.out.println("In able to type");
+     //   System.out.println("In able to type");
         SwingUtilities.invokeLater(
                 new Runnable(){
                     public void run(){
