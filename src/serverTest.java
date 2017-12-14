@@ -72,38 +72,11 @@ class Handler extends JFrame implements Runnable {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0,0,500,500);
 		try {
-			setUI();
+			infoExchange();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	private void setUI() throws Exception{
-		setTitle("Messenger");
-		userText= new JTextField();
-		userText.setFont(new Font("courier", Font.PLAIN, 25));
-		userText.setEditable(false);
-		userText.addActionListener(
-				new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						try {
-							encryption(userText.getText());
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						userText.setText("");
-					}
-				}
-		);
-		add(userText, BorderLayout.NORTH);
-		chatWindow = new JTextArea();
-		chatWindow.setFont(new Font("courier", Font.PLAIN, 20));
-		add (new JScrollPane(chatWindow));
-		setSize(300,150);
-		setVisible(false);
-		infoExchange();
 	}
 
 	private void infoExchange()throws Exception{
@@ -472,107 +445,6 @@ class Handler extends JFrame implements Runnable {
 		}
 	}
 
-	public void decryption(byte[] cipherText, String timeString)throws Exception {
-
-		System.out.println("start of decryption");
-		System.out.println("mesage before decrytion method in bytes" +cipherText);
-		byte[] decipheredMessage = decrypt(cipherText, serverKey.getPrivate());
-
-		System.out.println(String.format("The plaintext decripted on server side is : %s", decipheredMessage));
-		String x = new String(decipheredMessage);
-		String result =  x.substring(0,x.indexOf('['));
-		String signTimestamp =  x.substring(x.indexOf('['));
-		String sign =signTimestamp.substring(0, 11);
-		String Timestamp =signTimestamp.substring(11);
-		//String res = new String(result);
-
-		System.out.println("result...."+result);
-		System.out.println("sign..."+sign);
-		System.out.println("Timestamp..."+Timestamp);
-		System.out.println("timeString.."+timeString);
-
-		long sub1 = Long.parseLong(Timestamp.substring(0,(Timestamp.length())/2));
-		long sub2 = Long.parseLong(Timestamp.substring((Timestamp.length())/2));
-		long s1 = Long.parseLong(timeString.substring(0,(timeString.length())/2));
-		long s2 = Long.parseLong(timeString.substring((timeString.length())/2));
-
-		if (s1-sub1 ==0){
-			if (s2-sub2 > 1000){
-				System.out.println("Replayed message");
-				//showMessage("Replayed Attack");
-				closeConn();
-			}
-			else{
-				System.out.println(s2-sub2);
-				System.out.println("Original message");
-			}
-		}
-		else{
-			System.out.println("Replayed message");
-			//showMessage("Replayed Attack");
-			closeConn();
-		}
-		int length1 = input.readInt();
-		byte[] signature = null;
-		if(length1>0) {
-			signature = new byte[length1];
-			input.readFully(signature, 0, signature.length); // read the message
-		}
-
-
-		Signature publicSignature = Signature.getInstance("SHA256withRSA");
-		publicSignature.initVerify(clientPublicKey);
-		publicSignature.update(result.getBytes());
-
-
-		boolean check = publicSignature.verify(signature);
-		System.out.println("check"+check);
-
-//		System.out.println("here");
-		output.flush();
-
-	}
-
-	public void encryption(String plainText) throws Exception {
-
-		Signature signatureProvider = null;
-		signatureProvider = Signature.getInstance("SHA256WithRSA");
-		signatureProvider.initSign(serverKey.getPrivate());
-		signatureProvider.update(plainText.getBytes());
-		byte[] signature = signatureProvider.sign();
-
-		String y = signature.toString();
-		String timeString = Long.toString(new Date().getTime());
-		System.out.println("timeString.."+timeString);
-
-		Cipher encCipher = null;
-		encCipher = Cipher.getInstance("RSA");
-		encCipher.init(Cipher.ENCRYPT_MODE, clientPublicKey);
-
-		byte[] encrypted = encCipher.doFinal((plainText+y+timeString).getBytes());
-
-		output.writeInt(encrypted.length);
-		output.write(encrypted);
-		output.flush();
-
-		System.out.println("signature"+signature);
-		System.out.println("length" +signature.length);
-		output.writeInt(signature.length);
-		output.write(signature);
-		output.flush();
-
-//		System.out.println("here");
-	}
-
-	public static byte[] decrypt(byte[] encrypted, PrivateKey privateKey) throws Exception {
-		System.out.println("start of decryption method");
-		Cipher decriptCipher = Cipher.getInstance("RSA");
-		decriptCipher.init(Cipher.DECRYPT_MODE, privateKey);
-		byte[] x = decriptCipher.doFinal(encrypted);
-		System.out.println("end of decryption method");
-		System.out.println(x);
-		return x;
-	}
 	private String generateToken(){
 		String uuid = UUID.randomUUID().toString();
 		return uuid;
